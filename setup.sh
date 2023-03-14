@@ -2,6 +2,8 @@
 
 set -e
 
+CUDA_VERSION="12.1.0"
+CUDA_FULL_VERSION="12.1.0_530.30.02"
 # disable the restart dialogue and install several packages
 sudo sed -i "/#\$nrconf{restart} = 'i';/s/.*/\$nrconf{restart} = 'a';/" /etc/needrestart/needrestart.conf
 sudo apt update
@@ -10,9 +12,9 @@ sudo apt install git python3-venv build-essential net-tools -y
 
 # install CUDA (from https://developer.nvidia.com/cuda-downloads)
 cd /tmp
-sudo -u ubuntu wget --no-verbose https://developer.download.nvidia.com/compute/cuda/12.0.0/local_installers/cuda_12.0.0_525.60.13_linux.run
-sudo sh cuda_12.0.0_525.60.13_linux.run --silent
-sudo -u ubuntu rm cuda_12.0.0_525.60.13_linux.run
+sudo -u ubuntu wget --no-verbose https://developer.download.nvidia.com/compute/cuda/$CUDA_VERSION/local_installers/cuda_${CUDA_FULL_VERSION}_linux.run
+sudo sh cuda_${CUDA_FULL_VERSION}_linux.run --silent
+sudo -u ubuntu rm cuda_${CUDA_FULL_VERSION}_linux.run
 
 cd /home/ubuntu
 sudo -u ubuntu git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
