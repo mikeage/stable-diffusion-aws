@@ -19,9 +19,10 @@ aws ec2 run-instances \
     --tag-specifications 'ResourceType=spot-instances-request,Tags=[{Key=creator,Value=stable-diffusion-aws}]' \
     --instance-market-options 'MarketType=spot,SpotOptions={MaxPrice=0.20,SpotInstanceType=persistent,InstanceInterruptionBehavior=stop}'
 
+sleep 5
+
 export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
 export INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')
-export PUBLIC_IP=$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')
 
 aws cloudwatch put-metric-alarm \
     --alarm-name stable-diffusion-aws-stop-when-idle \
@@ -36,9 +37,11 @@ aws cloudwatch put-metric-alarm \
     --dimensions "Name=InstanceId,Value=$INSTANCE_ID" \
     --alarm-actions arn:aws:automate:$AWS_REGION:ec2:stop
 
-# Wait about 15 minutes
+export PUBLIC_IP=$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')
 
 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost:7860 ubuntu@$PUBLIC_IP
+
+# Wait about 15 minutes
 
 # Open http://localhost:7860
 ```
