@@ -4,14 +4,34 @@ set -e
 
 CUDA_VERSION="12.1.0"
 CUDA_FULL_VERSION="12.1.0_530.30.02"
-# disable the restart dialogue and install several packages
+
 sudo sed -i "/#\$nrconf{restart} = 'i';/s/.*/\$nrconf{restart} = 'a';/" /etc/needrestart/needrestart.conf
 sudo apt update
 # sudo apt upgrade -y
 sudo apt install git python3-venv build-essential net-tools -y
 
+cat <<EOF | sudo tee /usr/lib/systemd/system/instance-storage.service
+[Unit]
+Description=Format and mount ephemeral storage
+After=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/sbin/mkfs.ext4 /dev/nvme1n1
+ExecStart=/usr/bin/mkdir -p /mnt/ephemeral
+ExecStart=/usr/bin/mount /dev/nvme1n1 /mnt/ephemeral
+ExecStart=/usr/bin/chmod 777 /mnt/ephemeral
+ExecStop=/usr/bin/umount /mnt/ephemeral
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl enable instance-storage
+sudo systemctl start instance-storage
+
 # install CUDA (from https://developer.nvidia.com/cuda-downloads)
-cd /tmp
+cd /mnt/ephemeral
 sudo -u ubuntu wget --no-verbose https://developer.download.nvidia.com/compute/cuda/$CUDA_VERSION/local_installers/cuda_${CUDA_FULL_VERSION}_linux.run
 sudo sh cuda_${CUDA_FULL_VERSION}_linux.run --silent
 sudo -u ubuntu rm cuda_${CUDA_FULL_VERSION}_linux.run
