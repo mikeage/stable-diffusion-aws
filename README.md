@@ -10,6 +10,7 @@ export SECURITY_GROUP_ID="sg-0ba8468ab13683325"  # SSH only
 export KEY_NAME="MikeMiller"  # Your SSH keypair
 
 aws ec2 run-instances \
+    --no-cli-pager \
     --image-id $AMI_ID \
     --instance-type g4dn.xlarge \
     --key-name $KEY_NAME \
