@@ -16,9 +16,10 @@ aws ec2 run-instances \
     --security-group-ids $SECURITY_GROUP_ID \
     --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=30,VolumeType=gp3}' \
     --user-data file://setup.sh \
+    --tag-specifications 'ResourceType=spot-instances-request,Tags=[{Key=creator,Value=stable-diffusion-aws}]' \
     --instance-market-options 'MarketType=spot,SpotOptions={MaxPrice=0.20,SpotInstanceType=persistent,InstanceInterruptionBehavior=stop}'
 
-export SPOT_INSTANCE_REQUEST=sir-XXXXXX  # From the output of run-instances
+export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
 export INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')
 export PUBLIC_IP=$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')
 
