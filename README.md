@@ -5,7 +5,7 @@
 ### Launching
 
 ```bash
-export AMI_ID="ami-0574da719dca65348"  # Ubuntu 22.04 in us-east-1
+export AMI_ID="ami-0fec2c2e2017f4e7b"  # Debian 11 in us-east-1
 export SECURITY_GROUP_ID="sg-0ba8468ab13683325"  # SSH only
 export KEY_NAME="MikeMiller"  # Your SSH keypair
 
@@ -15,7 +15,7 @@ aws ec2 run-instances \
     --instance-type g4dn.xlarge \
     --key-name $KEY_NAME \
     --security-group-ids $SECURITY_GROUP_ID \
-    --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=30,VolumeType=gp3}' \
+    --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=30,VolumeType=gp3}' \
     --user-data file://setup.sh \
     --tag-specifications 'ResourceType=spot-instances-request,Tags=[{Key=creator,Value=stable-diffusion-aws}]' \
     --instance-market-options 'MarketType=spot,SpotOptions={MaxPrice=0.20,SpotInstanceType=persistent,InstanceInterruptionBehavior=stop}'
@@ -40,7 +40,7 @@ aws cloudwatch put-metric-alarm \
 
 export PUBLIC_IP=$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')
 
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost:7860 ubuntu@$PUBLIC_IP
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost:7860 admin@$PUBLIC_IP
 
 # Wait about 15 minutes
 
@@ -60,7 +60,7 @@ aws ec2 stop-instances --instance-ids $INSTANCE_ID
 ```bash
 aws ec2 start-instances --instance-ids $INSTANCE_ID
 export PUBLIC_IP=$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost:7860 ubuntu@$PUBLIC_IP
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost:7860 admin@$PUBLIC_IP
 ```
 
 #### Delete
