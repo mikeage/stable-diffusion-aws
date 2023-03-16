@@ -4,6 +4,8 @@
 
 ### Launching
 
+#### Create the spot instance request (which will create the instance after a few seconds)
+
 ```bash
 export AMI_ID="ami-0fec2c2e2017f4e7b"  # Debian 11 in us-east-1
 export SECURITY_GROUP_ID="sg-0ba8468ab13683325"  # SSH only
@@ -20,8 +22,11 @@ aws ec2 run-instances \
     --tag-specifications 'ResourceType=spot-instances-request,Tags=[{Key=creator,Value=stable-diffusion-aws}]' \
     --instance-market-options 'MarketType=spot,SpotOptions={MaxPrice=0.20,SpotInstanceType=persistent,InstanceInterruptionBehavior=stop}'
 
-sleep 5
+```
 
+#### Create an Alarm
+
+```bash
 export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
 export INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')
 
@@ -37,12 +42,17 @@ aws cloudwatch put-metric-alarm \
     --unit Percent \
     --dimensions "Name=InstanceId,Value=$INSTANCE_ID" \
     --alarm-actions arn:aws:automate:$AWS_REGION:ec2:stop
+```
 
+#### Connect
+
+```bash
+export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
+export INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')
 export PUBLIC_IP=$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')
-
 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost:7860 admin@$PUBLIC_IP
 
-# Wait about 15 minutes
+# Wait about 10 minutes from the first creation
 
 # Open http://localhost:7860
 ```
@@ -52,20 +62,24 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost
 #### Stop
 
 ```bash
+export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
+export INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')
 aws ec2 stop-instances --instance-ids $INSTANCE_ID
 ```
 
 #### Start
 
 ```bash
+export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
+export INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')
 aws ec2 start-instances --instance-ids $INSTANCE_ID
-export PUBLIC_IP=$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost:7860 admin@$PUBLIC_IP
 ```
 
 #### Delete
 
 ```bash
+export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
+export INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')
 aws ec2 cancel-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST
 aws ec2 terminate-instances --instance-ids $INSTANCE_ID
 aws cloudwatch delete-alarms --alarm-names stable-diffusion-aws-stop-when-idle
