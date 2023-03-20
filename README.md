@@ -39,7 +39,7 @@ aws cloudwatch put-metric-alarm \
     --statistic Maximum \
     --period 300  \
     --evaluation-periods 3 \
-    --threshold 10 \
+    --threshold 5 \
     --comparison-operator LessThanThreshold \
     --unit Percent \
     --dimensions "Name=InstanceId,Value=$INSTANCE_ID" \
