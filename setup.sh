@@ -21,6 +21,11 @@ ExecStart=/usr/sbin/mkfs.ext4 /dev/nvme1n1
 ExecStart=/usr/bin/mkdir -p /mnt/ephemeral
 ExecStart=/usr/bin/mount /dev/nvme1n1 /mnt/ephemeral
 ExecStart=/usr/bin/chmod 777 /mnt/ephemeral
+ExecStart=dd if=/dev/zero of=/mnt/ephemeral/swapfile bs=1G count=8
+ExecStart=chmod 600 /mnt/ephemeral/swapfile
+ExecStart=mkswap /mnt/ephemeral/swapfile
+ExecStart=swapon /mnt/ephemeral/swapfile
+ExecStop=swapoff /mnt/ephemeral/swapfile
 ExecStop=/usr/bin/umount /mnt/ephemeral
 
 [Install]
