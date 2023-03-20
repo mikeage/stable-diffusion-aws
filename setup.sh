@@ -43,7 +43,9 @@ sudo -u admin rm cuda_${CUDA_FULL_VERSION}_linux.run
 cd /home/admin
 sudo -u admin git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
 sudo -u admin wget --no-verbose https://huggingface.co/stabilityai/stable-diffusion-2-1-base/resolve/main/v2-1_512-ema-pruned.ckpt -P stable-diffusion-webui/models/Stable-diffusion/
+sudo -u admin wget --no-verbose https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.ckpt -P stable-diffusion-webui/models/Stable-diffusion/
 sudo -u admin wget --no-verbose https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/configs/stable-diffusion/v2-inference.yaml -O stable-diffusion-webui/models/Stable-diffusion/v2-1_512-ema-pruned.yaml
+sudo -u admin wget --no-verbose https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/configs/stable-diffusion/v2-inference-v.yaml -O stable-diffusion-webui/models/Stable-diffusion/v2-1_768-ema-pruned.yaml
 
 cat <<EOF | sudo tee /usr/lib/systemd/system/sdwebgui.service
 [Unit]

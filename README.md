@@ -18,7 +18,7 @@ aws ec2 run-instances \
     --instance-type g4dn.xlarge \
     --key-name $KEY_NAME \
     --security-group-ids $SECURITY_GROUP_ID \
-    --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=30,VolumeType=gp3}' \
+    --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=35,VolumeType=gp3}' \
     --user-data file://setup.sh \
     --tag-specifications 'ResourceType=spot-instances-request,Tags=[{Key=creator,Value=stable-diffusion-aws}]' \
     --instance-market-options 'MarketType=spot,SpotOptions={MaxPrice=0.20,SpotInstanceType=persistent,InstanceInterruptionBehavior=stop}'
