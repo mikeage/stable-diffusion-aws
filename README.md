@@ -75,7 +75,7 @@ aws ec2 stop-instances --instance-ids $INSTANCE_ID
 
 ```bash
 # Start the instance
-export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
+export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=disabled' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
 export INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')
 aws ec2 start-instances --instance-ids $INSTANCE_ID
 ```
