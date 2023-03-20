@@ -18,7 +18,7 @@ aws ec2 run-instances \
     --instance-type g4dn.xlarge \
     --key-name $KEY_NAME \
     --security-group-ids $SECURITY_GROUP_ID \
-    --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=35,VolumeType=gp3}' \
+    --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=50,VolumeType=gp3}' \
     --user-data file://setup.sh \
     --tag-specifications 'ResourceType=spot-instances-request,Tags=[{Key=creator,Value=stable-diffusion-aws}]' \
     --instance-market-options 'MarketType=spot,SpotOptions={MaxPrice=0.20,SpotInstanceType=persistent,InstanceInterruptionBehavior=stop}'
@@ -53,11 +53,11 @@ aws cloudwatch put-metric-alarm \
 export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
 export INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')
 export PUBLIC_IP=$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost:7860 admin@$PUBLIC_IP
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost:7860 -L9090:localhost:9090 admin@$PUBLIC_IP
 
 # Wait about 10 minutes from the first creation
 
-# Open http://localhost:7860
+# Open http://localhost:7860 or http://localhost:9090
 ```
 
 ### Lifecycle Management
@@ -101,8 +101,8 @@ Before starting, go to https://us-east-1.console.aws.amazon.com/servicequotas/ho
 
 The Quick Start section contains snippets to create a spot instance request that will launch one spot instance. The retail price of a g4dn.xlarge is $0.52/hour, but the spot market currently fluctuates around $0.17, for a 65% savings. These instructions set a price limit of $0.20; if you need better reliability, you can remove `MaxPrice=0.20,` and it will allow it to cost up to the full on-demand price.
 
-This spot instance can be stopped and started like a regular instance. When stopped, the only cost is $0.24/month for the EBS volume. When removing all traces of this, note that terminating the instance will cause the SpotInstanceRequest to launch a new instances, but conversely, canceling the SpotInstanceRequest will not automatically terminated the instances that it spawned. As such, the SpotInstanceRequest must be canceled first, and then the instance explicitly terminated.
+This spot instance can be stopped and started like a regular instance. When stopped, the only cost is $0.40/month for the EBS volume. When removing all traces of this, note that terminating the instance will cause the SpotInstanceRequest to launch a new instances, but conversely, canceling the SpotInstanceRequest will not automatically terminated the instances that it spawned. As such, the SpotInstanceRequest must be canceled first, and then the instance explicitly terminated.
 
 To save costs, the instance will automatically be shutdown if the CPU Utilization (sampled every 5 minutes) is less than 20% for 3 consecutive checks. This can be skipped if desired.
 
-There is no protection on the GUI, so it is not exposed to the world. Instead, create an ssh tunnel and connect via http://localhost:7860. 
+There is no protection on the GUI, so it is not exposed to the world. Instead, create an ssh tunnel and connect via either http://localhost:7860 for automatic1111 or http://localhost:9090 for Invoke-AI.
