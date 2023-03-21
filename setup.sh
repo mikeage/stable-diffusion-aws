@@ -34,6 +34,9 @@ EOF
 sudo systemctl enable instance-storage
 sudo systemctl start instance-storage
 
+# Reserve less space for root
+sudo tune2fs -m 1 /dev/nvme0n1p1
+
 # install CUDA (from https://developer.nvidia.com/cuda-downloads)
 cd /mnt/ephemeral
 sudo -u admin wget --no-verbose https://developer.download.nvidia.com/compute/cuda/$CUDA_VERSION/local_installers/cuda_${CUDA_FULL_VERSION}_linux.run
