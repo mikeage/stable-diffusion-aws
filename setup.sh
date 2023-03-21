@@ -5,6 +5,11 @@ set -e
 CUDA_VERSION="12.1.0"
 CUDA_FULL_VERSION="12.1.0_530.30.02"
 
+INSTALL_AUTOMATIC1111="true"
+INSTALL_INVOKEAI="true"
+# GUI_TO_START="automatic1111"
+GUI_TO_START="invokeai"
+
 sudo apt update
 # sudo apt upgrade -y
 sudo apt install git python3-venv python3-pip python3-dev build-essential net-tools linux-headers-cloud-amd64 -y
@@ -51,14 +56,17 @@ sudo chmod 777 $TMPDIR $XDG_CACHE_HOME
 
 sudo -u admin -E pip install --upgrade pip
 
+# Download models that will be used by either or both UIs
 cd /home/admin
+sudo -u admin mkdir models
+sudo -u admin wget --no-verbose https://huggingface.co/stabilityai/stable-diffusion-2-1-base/resolve/main/v2-1_512-ema-pruned.ckpt -P models/
+sudo -u admin wget --no-verbose https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.ckpt -P models/
+sudo -u admin wget --no-verbose https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/configs/stable-diffusion/v2-inference.yaml -O models/v2-1_512-ema-pruned.yaml
+sudo -u admin wget --no-verbose https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/configs/stable-diffusion/v2-inference-v.yaml -O models/v2-1_768-ema-pruned.yaml
 
-# Install Automatic1111
+if [ "$INSTALL_AUTOMATIC1111" = "true" ]; then
 sudo -u admin git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
-sudo -u admin wget --no-verbose https://huggingface.co/stabilityai/stable-diffusion-2-1-base/resolve/main/v2-1_512-ema-pruned.ckpt -P stable-diffusion-webui/models/Stable-diffusion/
-sudo -u admin wget --no-verbose https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.ckpt -P stable-diffusion-webui/models/Stable-diffusion/
-sudo -u admin wget --no-verbose https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/configs/stable-diffusion/v2-inference.yaml -O stable-diffusion-webui/models/Stable-diffusion/v2-1_512-ema-pruned.yaml
-sudo -u admin wget --no-verbose https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/configs/stable-diffusion/v2-inference-v.yaml -O stable-diffusion-webui/models/Stable-diffusion/v2-1_768-ema-pruned.yaml
+for f in /home/admin/models/*; do sudo -u admin ln $f /home/admin/stable-diffusion-webui/models/Stable-diffusion/; done
 
 cat <<EOF | sudo tee /usr/lib/systemd/system/sdwebgui.service
 [Unit]
@@ -79,9 +87,10 @@ StandardError=append:/var/log/sdwebui.log
 [Install]
 WantedBy=multi-user.target
 EOF
-sudo systemctl enable sdwebgui
+# sudo systemctl enable sdwebgui
+fi
 
-# Install Invoke AI
+if [ "$INSTALL_INVOKEAI" = "true" ]; then
 export INVOKEAI_ROOT=/home/admin/invokeai
 sudo -u admin -E mkdir $INVOKEAI_ROOT
 sudo -u admin -E /home/admin/.local/bin/pip install "InvokeAI[xformers]" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu117 --no-warn-script-location
@@ -111,7 +120,14 @@ StandardError=append:/var/log/invokeai.log
 [Install]
 WantedBy=multi-user.target
 EOF
-sudo systemctl enable invokeai
+# sudo systemctl enable invokeai
+fi
 
+if [ "$GUI_TO_START" = "automatic1111" ]; then
+sudo systemctl enable sdwebgui
 sudo systemctl start sdwebgui
+fi
+if [ "$GUI_TO_START" = "invokeai" ]; then
+sudo systemctl enable invokeai
 sudo systemctl start invokeai
+fi

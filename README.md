@@ -93,7 +93,9 @@ aws cloudwatch delete-alarms --alarm-names stable-diffusion-aws-stop-when-idle
 
 ## Full Explanation
 
-This repository makes it easy to run your own Stable Diffusion instance on AWS. It uses the excellent GUI at https://github.com/AUTOMATIC1111/stable-diffusion-webui, and is somewhat based on the code at https://github.com/marshmellow77/stable-diffusion-webui .
+This repository makes it easy to run your own Stable Diffusion instance on AWS. The are two options for frontends; the first is the GUI at https://github.com/AUTOMATIC1111/stable-diffusion-webui, and the second is https://github.com/invoke-ai/InvokeAI. By default, both are installed, but only Invoke-AI is started. There is insufficient RAM to run both at the same time, as model loading + image generation will take up slightly more than 16GB of RAM. There are environment variables at the beginning of setup.sh which can be used to set which are installed and/or started. Systemd services are installed for both, and they can be started or stopped at runtime freely. The names are `sdwebgui.service` and `invokeai.service`. 
+
+Some parts of the script are based on https://github.com/marshmellow77/stable-diffusion-webui .
 
 It is assumed that you have basic familiarity with AWS services, including setting up the CLI for use (whether via access keys or a profile or any other method).
 
