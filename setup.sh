@@ -12,7 +12,13 @@ GUI_TO_START="invokeai"
 
 sudo apt update
 # sudo apt upgrade -y
+# Essential packages
 sudo apt install git python3-venv python3-pip python3-dev build-essential net-tools linux-headers-cloud-amd64 -y
+# Useful tools
+sudo apt install -y tmux htop rsync ncdu
+# Remove if you don't want my tmux config
+sudo -u admin wget --no-verbose https://raw.githubusercontent.com/mikeage/dotfiles/master/.tmux.conf -P /home/admin/
+sudo -u admin wget --no-verbose https://raw.githubusercontent.com/mikeage/dotfiles/master/.tmux.conf.local -P /home/admin/
 
 cat <<EOF | sudo tee /usr/lib/systemd/system/instance-storage.service
 [Unit]
