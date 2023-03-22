@@ -105,6 +105,8 @@ The Quick Start section contains snippets to create a spot instance request that
 
 This spot instance can be stopped and started like a regular instance. When stopped, the only cost is $0.40/month for the EBS volume. When removing all traces of this, note that terminating the instance will cause the SpotInstanceRequest to launch a new instances, but conversely, canceling the SpotInstanceRequest will not automatically terminated the instances that it spawned. As such, the SpotInstanceRequest must be canceled first, and then the instance explicitly terminated.
 
+There is approximately 10GB free on the root partition. This should be sufficient for basic operation, but if you need more space temporarily, you can use `/mnt/ephemeral`, which is a 125GB (115 GB) instance volume. It is a high performance SSD, but will be wiped on every stop/start of the EC2 instance. It also contains an 8GB swapfile.
+
 To save costs, the instance will automatically be shutdown if the CPU Utilization (sampled every 5 minutes) is less than 20% for 3 consecutive checks. This can be skipped if desired.
 
 There is no protection on the GUI, so it is not exposed to the world. Instead, create an ssh tunnel and connect via either http://localhost:7860 for automatic1111 or http://localhost:9090 for Invoke-AI.
