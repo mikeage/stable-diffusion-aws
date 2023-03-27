@@ -25,7 +25,19 @@ aws ec2 run-instances \
 
 ```
 
-#### Create an Alarm to stop the instance after 15 minutes of idling
+#### Configure the node to automatically register with duckdns (optional)
+
+```bash
+# Register with DuckDNS
+# First, export DUCKDNS_TOKEN and DUCKDNS_SUBDOMAIN
+
+export SPOT_INSTANCE_REQUEST=$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')
+export INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')
+export PUBLIC_IP=$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no admin@$PUBLIC_IP "echo '#!/bin/sh' | sudo tee /etc/rc.local && echo 'curl '\''https://www.duckdns.org/update?domains=${DUCKDNS_SUBDOMAIN}&token=${DUCKDNS_TOKEN}&verbose=true'\' | sudo tee -a /etc/rc.local && sudo chmod +x /etc/rc.local && sudo systemctl daemon-reload && sudo systemctl start rc-local && systemctl status rc-local"
+```
+
+#### Create an Alarm to stop the instance after 15 minutes of idling (optional)
 
 ```bash
 # Create cloudwatch alarm
@@ -58,6 +70,19 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -L7860:localhost
 # Wait about 10 minutes from the first creation
 
 # Open http://localhost:7860 or http://localhost:9090
+```
+
+Alternatively, if you used the DuckDNS configuration above, adding this to your `~/.ssh/config` might be easier:
+
+```
+Host YOUR_NICKNAME
+    User admin
+    Hostname YOUR_NICKNAME.duckdns.org
+    IdentityFile ~/.ssh/StableDiffusionKey.pem
+    UserKnownHostsFile /dev/null
+    StrictHostKeyChecking no
+    LocalForward 7860 localhost:7860
+    LocalForward 9090 localhost:9090
 ```
 
 ### Lifecycle Management
