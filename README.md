@@ -6,8 +6,7 @@
 
 #### Create the spot instance request (which will create the instance after a few seconds)
 
-```bash
-# Launch an instance
+```bash {name=launch-an-instance}
 export AMI_ID="ami-0fec2c2e2017f4e7b"  # Debian 11 in us-east-1
 export SECURITY_GROUP_ID="sg-0ba8468ab13683325"  # SSH only
 export KEY_NAME="StableDiffusionKey"  # Your SSH keypair
@@ -27,8 +26,7 @@ aws ec2 run-instances \
 
 #### Configure the node to automatically register with duckdns (optional)
 
-```bash
-# Register with DuckDNS
+```bash {name=register-with-duckdns}
 # First, export DUCKDNS_TOKEN and DUCKDNS_SUBDOMAIN
 
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
@@ -39,8 +37,7 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no admin@$PUBLIC_IP
 
 #### Create an Alarm to stop the instance after 15 minutes of idling (optional)
 
-```bash
-# Create cloudwatch alarm
+```bash {name=create-cloudwatch-alarm}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 
@@ -60,8 +57,7 @@ aws cloudwatch put-metric-alarm \
 
 #### Connect
 
-```bash
-# Connect via SSH, create a tunnel
+```bash {name=connect-via-ssh}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 export PUBLIC_IP="$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')"
@@ -89,8 +85,7 @@ Host YOUR_NICKNAME
 
 #### Stop
 
-```bash
-# Stop the instance
+```bash {name=stop-the-instance}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 aws ec2 stop-instances --instance-ids $INSTANCE_ID
@@ -98,8 +93,7 @@ aws ec2 stop-instances --instance-ids $INSTANCE_ID
 
 #### Start
 
-```bash
-# Start the instance
+```bash {name=start-the-instance}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=disabled' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 aws ec2 start-instances --instance-ids $INSTANCE_ID
@@ -107,8 +101,7 @@ aws ec2 start-instances --instance-ids $INSTANCE_ID
 
 #### Delete
 
-```bash
-# Cleanup everything
+```bash {name=cleanup-everything}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open,disabled' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 aws ec2 cancel-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST
