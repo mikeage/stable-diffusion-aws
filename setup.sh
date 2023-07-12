@@ -85,6 +85,8 @@ Type=simple
 Restart=always
 RestartSec=1
 User=admin
+Environment=TMPDIR=/mnt/ephemeral/tmp
+Environment=XDG_CACHE_HOME=/mnt/ephemeral/cache
 WorkingDirectory=/home/admin/stable-diffusion-webui/
 ExecStart=/usr/bin/env bash /home/admin/stable-diffusion-webui/webui.sh
 StandardOutput=append:/var/log/sdwebui.log
@@ -121,6 +123,8 @@ Restart=always
 RestartSec=1
 User=admin
 Environment=INVOKEAI_ROOT=/home/admin/invokeai
+Environment=TMPDIR=/mnt/ephemeral/tmp
+Environment=XDG_CACHE_HOME=/mnt/ephemeral/cache
 WorkingDirectory=/home/admin/invokeai
 ExecStart=/home/admin/.local/bin/invokeai --web
 StandardOutput=append:/var/log/invokeai.log
