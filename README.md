@@ -7,7 +7,7 @@
 #### Create the spot instance request (which will create the instance after a few seconds)
 
 ```bash {name=launch-an-instance}
-export AMI_ID="ami-0fec2c2e2017f4e7b"  # Debian 11 in us-east-1
+export AMI_ID="ami-0a9d5908c7201e91d"  # Debian 11 in us-east-1
 export SECURITY_GROUP_ID="sg-0ba8468ab13683325"  # SSH only
 export KEY_NAME="StableDiffusionKey"  # Your SSH keypair
 
