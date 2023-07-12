@@ -103,6 +103,9 @@ sudo -u admin -E /home/admin/.local/bin/pip install "InvokeAI[xformers]" --use-p
 sudo apt install -y python3-opencv libopencv-dev
 sudo -u admin -E /home/admin/.local/bin/pip install pypatchmatch
 
+# TEMP: downgrade torchmetrics to fix https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/11648
+sudo -u admin -E /home/admin/.local/bin/pip install -U  torchmetrics==0.11.4
+
 sudo -u admin -E /home/admin/.local/bin/invokeai-configure --yes --default_only
 echo 'q' | sudo -u admin -E /home/admin/.local/bin/invokeai --from_file - --autoconvert /home/admin/models/
 
