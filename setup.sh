@@ -19,6 +19,8 @@ sudo apt install -y tmux htop rsync ncdu
 # Remove if you don't want my tmux config
 sudo -u admin wget --no-verbose https://raw.githubusercontent.com/mikeage/dotfiles/master/.tmux.conf -P /home/admin/
 sudo -u admin wget --no-verbose https://raw.githubusercontent.com/mikeage/dotfiles/master/.tmux.conf.local -P /home/admin/
+# I like alacritty
+wget https://raw.githubusercontent.com/alacritty/alacritty/master/extra/alacritty.info && tic -xe alacritty,alacritty-direct alacritty.info && sudo -u admin -E tic -xe alacritty,alacritty-direct alacritty.info && rm alacritty.info
 
 cat <<EOF | sudo tee /usr/lib/systemd/system/instance-storage.service
 [Unit]
