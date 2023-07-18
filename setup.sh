@@ -68,17 +68,17 @@ sudo chmod 777 $TMPDIR $XDG_CACHE_HOME
 
 sudo -u admin -E pip install --upgrade pip --no-warn-script-location
 
-# Download models that will be used by either or both UIs
-cd /home/admin
-sudo -u admin mkdir models
-sudo -u admin wget --no-verbose https://huggingface.co/stabilityai/stable-diffusion-2-1-base/resolve/main/v2-1_512-ema-pruned.ckpt -P models/
-sudo -u admin wget --no-verbose https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.ckpt -P models/
-sudo -u admin wget --no-verbose https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/configs/stable-diffusion/v2-inference.yaml -O models/v2-1_512-ema-pruned.yaml
-sudo -u admin wget --no-verbose https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/configs/stable-diffusion/v2-inference-v.yaml -O models/v2-1_768-ema-pruned.yaml
-
 if [ "$INSTALL_AUTOMATIC1111" = "true" ]; then
+cd /home/admin
 sudo -u admin git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
-for f in /home/admin/models/*; do sudo -u admin ln $f /home/admin/stable-diffusion-webui/models/Stable-diffusion/; done
+
+# Download initial models
+sudo -u admin mkdir -p /home/admin/stable-diffusion-webui/models/Stable-diffusion/
+cd /home/admin/stable-diffusion-webui/models/Stable-diffusion/
+sudo -u admin wget --no-verbose https://huggingface.co/stabilityai/stable-diffusion-2-1-base/resolve/main/v2-1_512-ema-pruned.ckpt
+sudo -u admin wget --no-verbose https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.ckpt
+sudo -u admin wget --no-verbose https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/configs/stable-diffusion/v2-inference.yaml -O v2-1_512-ema-pruned.yaml
+sudo -u admin wget --no-verbose https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/configs/stable-diffusion/v2-inference-v.yaml -O v2-1_768-ema-pruned.yaml
 
 cat <<EOF | sudo tee /usr/lib/systemd/system/sdwebgui.service
 [Unit]
@@ -111,11 +111,11 @@ sudo -u admin -E mkdir $INVOKEAI_ROOT
 sudo -u admin -E /home/admin/.local/bin/pip install "InvokeAI[xformers]" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu117 --no-warn-script-location
 sudo apt install -y python3-opencv libopencv-dev
 sudo -u admin -E /home/admin/.local/bin/pip install pypatchmatch --no-warn-script-location
-
-# TEMP: downgrade torchmetrics to fix https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/11648
-sudo -u admin -E /home/admin/.local/bin/pip install -U torchmetrics==0.11.4 --no-warn-script-location
-sudo -u admin -E /home/admin/.local/bin/invokeai-configure --yes --default_only
-echo 'q' | sudo -u admin -E /home/admin/.local/bin/invokeai --from_file - --autoconvert /home/admin/models/
+sudo -u admin -E /home/admin/.local/bin/invokeai-configure --yes --skip-sd-weights
+# Manually add the SD 1.5 and 2.1 model
+sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add runwayml/stable-diffusion-v1-5
+#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add stabilityai/stable-diffusion-2-1-base # 512 version
+sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add stabilityai/stable-diffusion-2-1
 
 cat <<EOF | sudo tee /usr/lib/systemd/system/invokeai.service
 [Unit]
@@ -132,7 +132,7 @@ Environment=INVOKEAI_ROOT=/home/admin/invokeai
 Environment=TMPDIR=/mnt/ephemeral/tmp
 Environment=XDG_CACHE_HOME=/mnt/ephemeral/cache
 WorkingDirectory=/home/admin/invokeai
-ExecStart=/home/admin/.local/bin/invokeai --web
+ExecStart=/home/admin/.local/bin/invokeai-web
 StandardOutput=append:/var/log/invokeai.log
 StandardError=append:/var/log/invokeai.log
 
@@ -140,6 +140,13 @@ StandardError=append:/var/log/invokeai.log
 WantedBy=multi-user.target
 EOF
 # sudo systemctl enable invokeai
+
+# Customize a few parameters
+sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq
+sudo -u admin -E yq e -i '.InvokeAI.Features.nsfw_checker = false' $INVOKEAI_ROOT/invokeai.yaml
+# Default is 2.75, but that's also assuming an 8GB card
+sudo -u admin -E yq e -i '.InvokeAI.Memory/Performance.max_vram_cache_size = 8' $INVOKEAI_ROOT/invokeai.yaml
+
 fi
 
 if [ "$GUI_TO_START" = "automatic1111" ]; then
