@@ -62,7 +62,7 @@ sudo mkdir $TMPDIR
 sudo mkdir $XDG_CACHE_HOME
 sudo chmod 777 $TMPDIR $XDG_CACHE_HOME
 
-sudo -u admin -E pip install --upgrade pip
+sudo -u admin -E pip install --upgrade pip --no-warn-script-location
 
 # Download models that will be used by either or both UIs
 cd /home/admin
@@ -105,11 +105,10 @@ export INVOKEAI_ROOT=/home/admin/invokeai
 sudo -u admin -E mkdir $INVOKEAI_ROOT
 sudo -u admin -E /home/admin/.local/bin/pip install "InvokeAI[xformers]" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu117 --no-warn-script-location
 sudo apt install -y python3-opencv libopencv-dev
-sudo -u admin -E /home/admin/.local/bin/pip install pypatchmatch
+sudo -u admin -E /home/admin/.local/bin/pip install pypatchmatch --no-warn-script-location
 
 # TEMP: downgrade torchmetrics to fix https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/11648
-sudo -u admin -E /home/admin/.local/bin/pip install -U  torchmetrics==0.11.4
-
+sudo -u admin -E /home/admin/.local/bin/pip install -U torchmetrics==0.11.4 --no-warn-script-location
 sudo -u admin -E /home/admin/.local/bin/invokeai-configure --yes --default_only
 echo 'q' | sudo -u admin -E /home/admin/.local/bin/invokeai --from_file - --autoconvert /home/admin/models/
 
