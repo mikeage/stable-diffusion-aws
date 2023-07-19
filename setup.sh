@@ -58,6 +58,9 @@ sudo -u admin rm cuda_${CUDA_FULL_VERSION}_linux.run
 
 export TMPDIR=/mnt/ephemeral/tmp
 export XDG_CACHE_HOME=/mnt/ephemeral/cache
+echo 'export TMPDIR=/mnt/ephemeral/tmp' | tee -a /home/admin/.bashrc
+echo 'export XDG_CACHE_HOME=/mnt/ephemeral/cache' | tee -a /home/admin/.bashrc
+
 sudo mkdir $TMPDIR
 sudo mkdir $XDG_CACHE_HOME
 sudo chmod 777 $TMPDIR $XDG_CACHE_HOME
@@ -102,6 +105,7 @@ fi
 
 if [ "$INSTALL_INVOKEAI" = "true" ]; then
 export INVOKEAI_ROOT=/home/admin/invokeai
+echo 'export INVOKEAI_ROOT=/home/admin/invokeai' | tee -a /home/admin/.bashrc
 sudo -u admin -E mkdir $INVOKEAI_ROOT
 sudo -u admin -E /home/admin/.local/bin/pip install "InvokeAI[xformers]" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu117 --no-warn-script-location
 sudo apt install -y python3-opencv libopencv-dev
