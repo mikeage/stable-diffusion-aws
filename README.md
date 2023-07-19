@@ -7,9 +7,11 @@
 #### Create the spot instance request (which will create the instance after a few seconds)
 
 ```bash {name=launch-an-instance}
-export AMI_ID="ami-0a9d5908c7201e91d"  # Debian 11 in us-east-1
-export SECURITY_GROUP_ID="sg-0ba8468ab13683325"  # SSH only
 export KEY_NAME="StableDiffusionKey"  # Your SSH keypair
+export SECURITY_GROUP_ID="sg-0ba8468ab13683325"  # SSH only
+
+# Get the latest Debian 11 image
+export AMI_ID=$(aws ec2 describe-images --owners 136693071363 --query "sort_by(Images, &CreationDate)[-1].ImageId" --filters "Name=name,Values=debian-11-amd64-*" | jq -r .)
 
 aws ec2 run-instances \
     --no-cli-pager \
