@@ -8,17 +8,21 @@
 
 ```bash {name=launch-an-instance}
 export KEY_NAME="StableDiffusionKey"  # Your SSH keypair
-export SECURITY_GROUP_ID="sg-0ba8468ab13683325"  # SSH only
 
 # Get the latest Debian 11 image
 export AMI_ID=$(aws ec2 describe-images --owners 136693071363 --query "sort_by(Images, &CreationDate)[-1].ImageId" --filters "Name=name,Values=debian-11-amd64-*" | jq -r .)
+
+DEFAULT_VPC_ID=$(aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query 'Vpcs[0].VpcId' --output text)
+SG_ID=$(aws ec2 create-security-group --group-name SSH-Only --description "Allow SSH from anywhere" --vpc-id $DEFAULT_VPC_ID --query 'GroupId' --output text)
+aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
+aws ec2 create-tags --resources $SG_ID --tags Key=creator,Value=stable-diffusion-aws
 
 aws ec2 run-instances \
     --no-cli-pager \
     --image-id $AMI_ID \
     --instance-type g4dn.xlarge \
     --key-name $KEY_NAME \
-    --security-group-ids $SECURITY_GROUP_ID \
+    --security-group-ids $SG_ID \
     --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=50,VolumeType=gp3}' \
     --user-data file://setup.sh \
     --tag-specifications 'ResourceType=spot-instances-request,Tags=[{Key=creator,Value=stable-diffusion-aws}]' \
@@ -106,8 +110,10 @@ aws ec2 start-instances --instance-ids $INSTANCE_ID
 ```bash {name=cleanup-everything, promptEnv=false}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open,disabled' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
+export SG_ID="$(aws ec2 describe-security-groups --filters 'Name=tag:creator,Values=stable-diffusion-aws' --query 'SecurityGroups[*].GroupId' --output text)"
 aws ec2 cancel-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST
 aws ec2 terminate-instances --instance-ids $INSTANCE_ID
+aws ec2 delete-security-group --group-id $SG_ID
 aws cloudwatch delete-alarms --alarm-names stable-diffusion-aws-stop-when-idle
 ```
 
