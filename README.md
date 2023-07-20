@@ -111,13 +111,20 @@ aws ec2 start-instances --instance-ids $INSTANCE_ID
 
 ```bash {name=cleanup-everything, promptEnv=false}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open,disabled' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
-export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
+[[ -n $SPOT_INSTANCE_REQUEST ]] && export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 export SG_ID="$(aws ec2 describe-security-groups --filters 'Name=tag:creator,Values=stable-diffusion-aws' --query 'SecurityGroups[*].GroupId' --output text)"
 export KEY_PAIR_NAME="$(aws ec2 describe-key-pairs --filters 'Name=tag:creator,Values=stable-diffusion-aws' --query 'KeyPairs[0].KeyName' --output text)"
-aws ec2 cancel-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST
-aws ec2 terminate-instances --instance-ids $INSTANCE_ID
-aws ec2 delete-key-pair --key-name $KEY_PAIR_NAME
-aws ec2 delete-security-group --group-id $SG_ID
+[[ -n $SPOT_INSTANCE_REQUEST ]] && aws ec2 cancel-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST
+if [[ -n $INSTANCE_ID ]]
+then
+    VPC_ID=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].VpcId' --output text)
+    DEFAULT_SG_ID=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=group-name,Values=default" --query 'SecurityGroups[0].GroupId' --output text)
+    aws ec2 modify-instance-attribute --instance-id $INSTANCE_ID --groups $DEFAULT_SG_ID
+    aws ec2 terminate-instances --instance-ids $INSTANCE_ID
+fi
+
+[[ -n $KEY_PAIR_NAME ]] && aws ec2 delete-key-pair --key-name $KEY_PAIR_NAME
+[[ -n $SG_ID ]] && aws ec2 delete-security-group --group-id $SG_ID
 aws cloudwatch delete-alarms --alarm-names stable-diffusion-aws-stop-when-idle
 ```
 
