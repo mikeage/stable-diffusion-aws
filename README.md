@@ -8,6 +8,9 @@
 
 ```bash {name=launch-an-instance}
 export PUBLIC_KEY_PATH="$HOME/.ssh/id_rsa.pub"
+export INSTALL_AUTOMATIC1111="true"
+export INSTALL_INVOKEAI="true"
+export GUI_TO_START="invokeai"
 
 aws ec2 import-key-pair --key-name stable-diffusion-aws --public-key-material fileb://${PUBLIC_KEY_PATH} --tag-specifications 'ResourceType=key-pair,Tags=[{Key=creator,Value=stable-diffusion-aws}]'
 
@@ -27,7 +30,8 @@ aws ec2 run-instances \
     --security-group-ids $SG_ID \
     --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=50,VolumeType=gp3}' \
     --user-data file://setup.sh \
-    --tag-specifications 'ResourceType=spot-instances-request,Tags=[{Key=creator,Value=stable-diffusion-aws}]' \
+    --metadata-options "InstanceMetadataTags=enabled" \
+    --tag-specifications "ResourceType=spot-instances-request,Tags=[{Key=creator,Value=stable-diffusion-aws}]" "ResourceType=instance,Tags=[{Key=INSTALL_AUTOMATIC1111,Value=$INSTALL_AUTOMATIC1111},{Key=INSTALL_INVOKEAI,Value=$INSTALL_INVOKEAI},{Key=GUI_TO_START,Value=$GUI_TO_START}]" \
     --instance-market-options 'MarketType=spot,SpotOptions={MaxPrice=0.20,SpotInstanceType=persistent,InstanceInterruptionBehavior=stop}'
 
 ```

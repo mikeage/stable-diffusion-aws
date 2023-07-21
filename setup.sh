@@ -5,10 +5,11 @@ set -e
 CUDA_VERSION="12.2.0"
 CUDA_FULL_VERSION="12.2.0_535.54.03"
 
-INSTALL_AUTOMATIC1111="true"
-INSTALL_INVOKEAI="true"
-# GUI_TO_START="automatic1111"
-GUI_TO_START="invokeai"
+INSTALL_AUTOMATIC1111="$(curl -s http://169.254.169.254/latest/meta-data/tags/instance/INSTALL_AUTOMATIC1111)"
+INSTALL_INVOKEAI="$(curl -s http://169.254.169.254/latest/meta-data/tags/instance/INSTALL_INVOKEAI)"
+GUI_TO_START="$(curl -s http://169.254.169.254/latest/meta-data/tags/instance/GUI_TO_START)"
+
+echo "Configuration: INSTALL_AUTOMATIC1111=$INSTALL_AUTOMATIC1111, INSTALL_INVOKEAI=$INSTALL_INVOKEAI, GUI_TO_START=$GUI_TO_START"
 
 sudo apt update
 # sudo apt upgrade -y
