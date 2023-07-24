@@ -2,6 +2,8 @@
 
 ## Quick Start
 
+I use https://github.com/stateful/runme to make it easier to run these snippets; I strongly suggest you do too :-)
+
 ### Launching
 
 #### Create the spot instance request (which will create the instance after a few seconds)
