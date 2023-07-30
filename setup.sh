@@ -112,10 +112,21 @@ sudo -u admin -E /home/admin/.local/bin/pip install "InvokeAI[xformers]" --use-p
 sudo apt install -y python3-opencv libopencv-dev
 sudo -u admin -E /home/admin/.local/bin/pip install pypatchmatch --no-warn-script-location
 sudo -u admin -E /home/admin/.local/bin/invokeai-configure --yes --skip-sd-weights
+
 # Manually add the SD 1.5 and 2.1 model
 sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add runwayml/stable-diffusion-v1-5
 #sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add stabilityai/stable-diffusion-2-1-base # 512 version
 sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add stabilityai/stable-diffusion-2-1
+
+# A few more things installed by default in SD. These can be manually run as well at any point.
+# LoRAs
+#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add https://civitai.com/api/download/models/63006  # LowRA - SD 1.5
+# Embeddings
+#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add https://huggingface.co/embed/EasyNegative/resolve/main/EasyNegative.safetensors
+# ControlNets
+#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add lllyasviel/control_v11p_sd15_canny
+#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add lllyasviel/control_v11p_sd15_lineart
+#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add lllyasviel/control_v11p_sd15_openpose
 
 cat <<EOF | sudo tee /usr/lib/systemd/system/invokeai.service
 [Unit]
