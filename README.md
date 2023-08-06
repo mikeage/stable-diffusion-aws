@@ -13,6 +13,7 @@ export PUBLIC_KEY_PATH="$HOME/.ssh/id_rsa.pub"
 export INSTALL_AUTOMATIC1111="true"
 export INSTALL_INVOKEAI="true"
 export GUI_TO_START="invokeai"
+export EBS_SIZE="50"
 
 aws ec2 import-key-pair --key-name stable-diffusion-aws --public-key-material fileb://${PUBLIC_KEY_PATH} --tag-specifications 'ResourceType=key-pair,Tags=[{Key=creator,Value=stable-diffusion-aws}]'
 
@@ -30,7 +31,7 @@ aws ec2 run-instances \
     --instance-type g4dn.xlarge \
     --key-name stable-diffusion-aws \
     --security-group-ids $SG_ID \
-    --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=50,VolumeType=gp3}' \
+    --block-device-mappings "DeviceName=/dev/xvda,Ebs={VolumeSize=${EBS_SIZE},VolumeType=gp3}" \
     --user-data file://setup.sh \
     --metadata-options "InstanceMetadataTags=enabled" \
     --tag-specifications "ResourceType=spot-instances-request,Tags=[{Key=creator,Value=stable-diffusion-aws}]" "ResourceType=instance,Tags=[{Key=INSTALL_AUTOMATIC1111,Value=$INSTALL_AUTOMATIC1111},{Key=INSTALL_INVOKEAI,Value=$INSTALL_INVOKEAI},{Key=GUI_TO_START,Value=$GUI_TO_START}]" \
@@ -148,7 +149,7 @@ The Quick Start section contains snippets to create a spot instance request that
 
 This spot instance can be stopped and started like a regular instance. When stopped, the only cost is $0.40/month for the EBS volume. When removing all traces of this, note that terminating the instance will cause the SpotInstanceRequest to launch a new instances, but conversely, canceling the SpotInstanceRequest will not automatically terminated the instances that it spawned. As such, the SpotInstanceRequest must be canceled first, and then the instance explicitly terminated.
 
-There is approximately 10GB free on the root partition. This should be sufficient for basic operation, but if you need more space temporarily, you can use `/mnt/ephemeral`, which is a 125GB (115 GB) instance volume. It is a high performance SSD, but will be wiped on every stop/start of the EC2 instance. It also contains an 8GB swapfile.
+There is approximately 20GB free on the root partition. This should be sufficient for basic operation, but if you need more space temporarily, you can use `/mnt/ephemeral`, which is a 125GB (115 GB) instance volume. It is a high performance SSD, but will be wiped on every stop/start of the EC2 instance. It also contains an 8GB swapfile.
 
 To save costs, the instance will automatically be shutdown if the CPU Utilization (sampled every 5 minutes) is less than 20% for 3 consecutive checks. This can be skipped if desired.
 
