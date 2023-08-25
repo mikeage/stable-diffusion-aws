@@ -18,7 +18,7 @@ export EBS_SIZE="50"
 aws ec2 import-key-pair --key-name stable-diffusion-aws --public-key-material fileb://${PUBLIC_KEY_PATH} --tag-specifications 'ResourceType=key-pair,Tags=[{Key=creator,Value=stable-diffusion-aws}]'
 
 # Get the latest Debian 11 image
-export AMI_ID=$(aws ec2 describe-images --owners 136693071363 --query "sort_by(Images, &CreationDate)[-1].ImageId" --filters "Name=name,Values=debian-11-amd64-*" | jq -r .)
+export AMI_ID=$(aws ec2 describe-images --owners 136693071363 --query "sort_by(Images, &CreationDate)[-1].ImageId" --filters "Name=name,Values=debian-12-amd64-*" | jq -r .)
 
 export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query 'Vpcs[0].VpcId' --output text)
 export SG_ID=$(aws ec2 create-security-group --group-name SSH-Only --description "Allow SSH from anywhere" --vpc-id $DEFAULT_VPC_ID --query 'GroupId' --output text)
