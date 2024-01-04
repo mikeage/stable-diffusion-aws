@@ -97,7 +97,7 @@ User=admin
 Environment=TMPDIR=/mnt/ephemeral/tmp
 Environment=XDG_CACHE_HOME=/mnt/ephemeral/cache
 WorkingDirectory=/home/admin/stable-diffusion-webui/
-ExecStart=/usr/bin/env bash /home/admin/stable-diffusion-webui/webui.sh
+ExecStart=/usr/bin/env bash /home/admin/stable-diffusion-webui/webui.sh --xformers
 StandardOutput=append:/var/log/sdwebui.log
 StandardError=append:/var/log/sdwebui.log
 
