@@ -71,6 +71,8 @@ sudo chmod 777 $TMPDIR $XDG_CACHE_HOME
 
 if [ "$INSTALL_AUTOMATIC1111" = "true" ]; then
 cd /home/admin
+sudo apt install -y libtcmalloc-minimal4
+
 sudo -u admin git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
 
 # Download initial models
