@@ -8,7 +8,7 @@ I use https://github.com/stateful/runme to make it easier to run these snippets;
 
 #### Create the spot instance request (which will create the instance after a few seconds)
 
-```bash {name=launch-an-instance}
+```bash {"name": "launch-an-instance", "promptEnv": "yes"}
 export PUBLIC_KEY_PATH="$HOME/.ssh/id_rsa.pub"
 export INSTALL_AUTOMATIC1111="true"
 export INSTALL_INVOKEAI="true"
@@ -41,7 +41,7 @@ aws ec2 run-instances \
 
 #### Configure the node to automatically register with duckdns (optional)
 
-```bash {name=register-with-duckdns, promptEnv=false}
+```bash {"name": "register-with-duckdns", "promptEnv": "no"}
 # First, export DUCKDNS_TOKEN and DUCKDNS_SUBDOMAIN
 
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
@@ -52,7 +52,7 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no admin@$PUBLIC_IP
 
 #### Create an Alarm to stop the instance after 15 minutes of idling (optional)
 
-```bash {name=create-cloudwatch-alarm, promptEnv=false}
+```bash {"name": "create-cloudwatch-alarm", "promptEnv": "no"}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 
@@ -72,7 +72,7 @@ aws cloudwatch put-metric-alarm \
 
 #### Connect
 
-```bash {name=connect-via-ssh, promptEnv=false}
+```bash {"name": "connect-via-ssh", "promptEnv": "no"}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 export PUBLIC_IP="$(aws ec2 describe-instances --instance-id $INSTANCE_ID | jq -r '.Reservations[].Instances[].PublicIpAddress')"
@@ -100,7 +100,7 @@ Host YOUR_NICKNAME
 
 #### Stop
 
-```bash {name=stop-the-instance, promptEnv=false}
+```bash {"name": "stop-the-instance", "promptEnv": "no"}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 aws ec2 stop-instances --instance-ids $INSTANCE_ID
@@ -108,7 +108,7 @@ aws ec2 stop-instances --instance-ids $INSTANCE_ID
 
 #### Start
 
-```bash {name=start-the-instance, promptEnv=false}
+```bash {"name": "start-the-instance", "promptEnv": "no"}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=disabled' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 aws ec2 start-instances --instance-ids $INSTANCE_ID
@@ -116,7 +116,7 @@ aws ec2 start-instances --instance-ids $INSTANCE_ID
 
 #### Delete
 
-```bash {name=cleanup-everything, promptEnv=false}
+```bash {"name": "cleanup-everything", "promptEnv": "no"}
 export SPOT_INSTANCE_REQUEST="$(aws ec2 describe-spot-instance-requests --filters 'Name=tag:creator,Values=stable-diffusion-aws' 'Name=state,Values=active,open,disabled' | jq -r '.SpotInstanceRequests[].SpotInstanceRequestId')"
 [[ -n $SPOT_INSTANCE_REQUEST ]] && export INSTANCE_ID="$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SPOT_INSTANCE_REQUEST | jq -r '.SpotInstanceRequests[].InstanceId')"
 export SG_ID="$(aws ec2 describe-security-groups --filters 'Name=tag:creator,Values=stable-diffusion-aws' --query 'SecurityGroups[*].GroupId' --output text)"
