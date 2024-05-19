@@ -20,9 +20,12 @@ sudo apt install git python3-venv python3-pip python3-dev build-essential net-to
 sudo -u admin pipx ensurepath
 # Useful tools
 sudo apt install -y tmux htop rsync ncdu
-# Remove if you don't want my tmux config
-sudo -u admin wget --no-verbose https://raw.githubusercontent.com/mikeage/dotfiles/master/.tmux.conf -P /home/admin/
-sudo -u admin wget --no-verbose https://raw.githubusercontent.com/mikeage/dotfiles/master/.tmux.conf.local -P /home/admin/
+# oh-my-tmux with some customizations
+sudo -u admin git clone https://github.com/gpakosz/.tmux.git /home/admin/oh-my-tmux
+sudo -u admin mkdir -p "/home/admin/.config/tmux"
+sudo -u admin ln -s "/home/admin/oh-my-tmux/.tmux.conf" "/home/admin/.config/tmux/tmux.conf"
+sudo -u admin wget --no-verbose https://raw.githubusercontent.com/mikeage/dotfiles/master/config/tmux/tmux.conf.local -P /home/admin/.config/tmux/
+
 # I like alacritty
 wget https://raw.githubusercontent.com/alacritty/alacritty/master/extra/alacritty.info && tic -xe alacritty,alacritty-direct alacritty.info && rm alacritty.info
 
