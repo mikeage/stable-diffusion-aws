@@ -119,22 +119,6 @@ sudo pip install 'packaging<22' -U --break-system-packages
 sudo -u admin -E pipx install "InvokeAI[xformers]" --pip-args "--use-pep517 --extra-index-url https://download.pytorch.org/whl/cu117"
 sudo apt install -y python3-opencv libopencv-dev
 sudo -u admin -E pipx inject InvokeAI pypatchmatch
-sudo -u admin -E /home/admin/.local/bin/invokeai-configure --yes --skip-sd-weights
-
-# Manually add the SD 1.5 and 2.1 model
-sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add runwayml/stable-diffusion-v1-5
-#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add stabilityai/stable-diffusion-2-1-base # 512 version
-sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add stabilityai/stable-diffusion-2-1
-
-# A few more things installed by default in SD. These can be manually run as well at any point.
-# LoRAs
-#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add https://civitai.com/api/download/models/63006  # LowRA - SD 1.5
-# Embeddings
-#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add https://huggingface.co/embed/EasyNegative/resolve/main/EasyNegative.safetensors
-# ControlNets
-#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add lllyasviel/control_v11p_sd15_canny
-#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add lllyasviel/control_v11p_sd15_lineart
-#sudo -u admin -E /home/admin/.local/bin/invokeai-model-install --yes --add lllyasviel/control_v11p_sd15_openpose
 
 cat <<EOF | sudo tee /usr/lib/systemd/system/invokeai.service
 [Unit]
@@ -159,12 +143,6 @@ StandardError=append:/var/log/invokeai.log
 WantedBy=multi-user.target
 EOF
 # sudo systemctl enable invokeai
-
-# Customize a few parameters
-sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq
-sudo -u admin -E yq e -i '.InvokeAI.Features.nsfw_checker = false' $INVOKEAI_ROOT/invokeai.yaml
-# Default is 2.75, but that's also assuming an 8GB card
-sudo -u admin -E yq e -i '.InvokeAI.Memory/Performance.max_vram_cache_size = 8' $INVOKEAI_ROOT/invokeai.yaml
 
 fi
 
